@@ -13,7 +13,7 @@ const inputRange = document.querySelector('.rollback input[type="range"]')
 const spanRange = document.querySelector('.rollback .range-value')
 
 const totalInput = document.getElementsByClassName('total-input')[0]
-const totalCount = document.getElementsByClassName('total-input')[1]
+const totalCountScreen = document.getElementsByClassName('total-input')[1]
 const totalCountOther = document.getElementsByClassName('total-input')[2]
 const fullTotalCount = document.getElementsByClassName('total-input')[3]
 const totalCountRollback = document.getElementsByClassName('total-input')[4]
@@ -75,7 +75,6 @@ const appData = {
             appData.showResult()
 
             this.rangeStart = true
-            console.log(appData);
         } else{
             alert('заполните поля для расчета!')
         }
@@ -92,6 +91,8 @@ const appData = {
             const select = screen.querySelector('select')
             const input = screen.querySelector('input')
             const selectName = select.options[select.selectedIndex].textContent
+
+            this.quantityScreen += +input.value
 
             this.screens.push({
                 id: index,
@@ -124,7 +125,14 @@ const appData = {
 
     addSsreenBlock: function(){
         const cloneScreen = screens[0].cloneNode(true)
-
+        screens = document.querySelectorAll('.screen')
+        /* 
+        я не помню, добавлял ли это Саша, но в общем. 
+        Если не сделать здесь переоределение, то получается так, что второй блок вставляется перед
+        первым блоком, но если вставить 3 блок, он появится над 2. Таким образом я исправил этот баг
+        можешь удалить переопределение, и сама увидишь результат.
+        Для чистоты эксперемента, советую заполнять поля, только так это заметно
+        */
         screens[screens.length -1].after(cloneScreen)
     },
 
@@ -133,6 +141,7 @@ const appData = {
         totalCountOther.value = this.servicePricePercent + this.servicePricesNumber
         fullTotalCount.value = this.fullPrice
         totalCountRollback.value = this.fullPriceRollback
+        totalCountScreen.value = this.quantityScreen
     },  
 
     changeValueRollback: function(){
