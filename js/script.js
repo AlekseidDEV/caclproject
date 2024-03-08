@@ -34,7 +34,7 @@ const appData = {
     quantityScreen: 0,
     rangeStart: false,
 
-    init: function(){
+    init: function () {
         this.addTitle()
         startBtn.addEventListener('click', this.checkValue)
         btnPlus.addEventListener('click', this.addSsreenBlock)
@@ -42,25 +42,25 @@ const appData = {
             spanRange.textContent = `${e.target.value}%`
             this.rollback = +e.target.value
 
-            if(this.rangeStart){
+            if (this.rangeStart) {
                 appData.changeValueRollback()
             }
         })
     },
 
-    checkValue: function(){
+    checkValue: function () {
         let succes = false
-            
+
         screens = document.querySelectorAll('.screen')
-        
-        screens.forEach((screen) => {
+
+        succes = Array.from(screens).every((screen) => {
             const select = screen.querySelector('select')
             const input = screen.querySelector('input')
 
-            if(select.value !== '' && input.value !== ''){
-               succes =  true
-            } else{
-                succes = false
+            if (select.value !== '' && input.value !== '') {
+                return true
+            } else {
+                return false
             }
         })
 
@@ -68,23 +68,23 @@ const appData = {
     },
 
     start: function (flagStart) {
-        if(flagStart){
+        if (flagStart) {
             appData.addScreens()
             appData.addServices()
             appData.addPrices()
             appData.showResult()
 
             this.rangeStart = true
-        } else{
+        } else {
             alert('заполните поля для расчета!')
         }
     },
 
-    addTitle: function(){
+    addTitle: function () {
         document.title = title.textContent
     },
 
-    addScreens: function() {
+    addScreens: function () {
         screens = document.querySelectorAll('.screen')
 
         screens.forEach((screen, index) => {
@@ -97,17 +97,18 @@ const appData = {
             this.screens.push({
                 id: index,
                 name: selectName,
-                price: +select.value * +input.value})
+                price: +select.value * +input.value
+            })
         })
     },
 
-    addServices: function(){
+    addServices: function () {
         percentItem.forEach((item) => {
             const checkbox = item.querySelector('input[type="checkbox"]')
             const label = item.querySelector('label')
             const input = item.querySelector('input[type="text"]')
 
-            if(checkbox.checked){
+            if (checkbox.checked) {
                 this.servicesPercent[label.textContent] = +input.value
             }
         })
@@ -117,13 +118,13 @@ const appData = {
             const label = item.querySelector('label')
             const input = item.querySelector('input[type="text"]')
 
-            if(checkbox.checked){
+            if (checkbox.checked) {
                 this.servicesNumber[label.textContent] = +input.value
             }
         })
     },
 
-    addSsreenBlock: function(){
+    addSsreenBlock: function () {
         const cloneScreen = screens[0].cloneNode(true)
         screens = document.querySelectorAll('.screen')
         /* 
@@ -133,31 +134,31 @@ const appData = {
         можешь удалить переопределение, и сама увидишь результат.
         Для чистоты эксперемента, советую заполнять поля, только так это заметно
         */
-        screens[screens.length -1].after(cloneScreen)
+        screens[screens.length - 1].after(cloneScreen)
     },
 
-    showResult: function(){
+    showResult: function () {
         totalInput.value = this.screenPrice
         totalCountOther.value = this.servicePricePercent + this.servicePricesNumber
         fullTotalCount.value = this.fullPrice
         totalCountRollback.value = this.fullPriceRollback
         totalCountScreen.value = this.quantityScreen
-    },  
+    },
 
-    changeValueRollback: function(){
+    changeValueRollback: function () {
         totalCountRollback.value = this.fullPriceRollback = this.fullPrice - ((this.fullPrice / 100) * this.rollback)
     },
 
-    addPrices: function(){
+    addPrices: function () {
         this.screenPrice = this.screens.reduce((sum, num) => {
             return sum + +num.price
         }, 0)
 
-        for(let key in this.servicesNumber){
+        for (let key in this.servicesNumber) {
             this.servicePricesNumber += this.servicesNumber[key]
         }
 
-        for(let key in this.servicesPercent){
+        for (let key in this.servicesPercent) {
             this.servicePricePercent += this.screenPrice * (this.servicesPercent[key] / 100)
         }
 
@@ -168,4 +169,3 @@ const appData = {
 };
 
 appData.init()
-
