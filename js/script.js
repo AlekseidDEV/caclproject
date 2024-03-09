@@ -17,6 +17,11 @@ const totalCountScreen = document.getElementsByClassName('total-input')[1]
 const totalCountOther = document.getElementsByClassName('total-input')[2]
 const fullTotalCount = document.getElementsByClassName('total-input')[3]
 const totalCountRollback = document.getElementsByClassName('total-input')[4]
+const checkCms = document.getElementById('cms-open')
+const cmsVariantblock = document.querySelector('.hidden-cms-variants')
+const selectCmsVariant = document.getElementById('cms-select')
+const otherCmsInputBlock = cmsVariantblock.querySelector('.main-controls__input')
+const inputCmsVariant = otherCmsInputBlock.querySelector('#cms-other-input')
 
 let screens = document.querySelectorAll('.screen')
 
@@ -33,22 +38,41 @@ const appData = {
     fullPriceRollback: 0,
     quantityScreen: 0,
     rangeStart: false,
+    statusProgramm: false,
+    cmsVariantPercent: 0,
+    cmsVarintTotal: 0,
 
-    init: function () {
-        this.addTitle()
-        startBtn.addEventListener('click', this.checkValue)
-        btnPlus.addEventListener('click', this.addSsreenBlock)
+    init: () => {
+        appData.addTitle()
+        startBtn.addEventListener('click', appData.checkValue)
+        resetBtn.addEventListener('click', appData.reset)
+        btnPlus.addEventListener('click', appData.addSsreenBlock)
         inputRange.addEventListener('input', (e) => {
             spanRange.textContent = `${e.target.value}%`
-            this.rollback = +e.target.value
+            appData.rollback = +e.target.value
 
-            if (this.rangeStart) {
+            if (appData.rangeStart) {
                 appData.changeValueRollback()
+            }
+        })
+        checkCms.addEventListener('change', () => {
+            if(checkCms.checked){
+                cmsVariantblock.style.display = 'block'
+            } else{
+                cmsVariantblock.style.display = 'none'
+            }
+        })
+
+        selectCmsVariant.addEventListener('change', (e) => {
+            if(e.target.value === 'other'){
+                otherCmsInputBlock.style.display = 'flex'
+            } else{
+                otherCmsInputBlock.style.display = 'none'
             }
         })
     },
 
-    checkValue: function () {
+    checkValue: () => {
         let succes = false
 
         screens = document.querySelectorAll('.screen')
@@ -67,24 +91,102 @@ const appData = {
         appData.start(succes)
     },
 
-    start: function (flagStart) {
+    isBlockingProgramm: () => {
+        const allCheckbox = document.querySelectorAll('input[type="checkbox"]')
+        screens = document.querySelectorAll('.screen')
+
+        if(appData.statusProgramm){
+            startBtn.style.display = 'none'
+            resetBtn.style.display = 'block'
+    
+            screens.forEach((screen) => {
+                const select = screen.querySelector('select')
+                const input = screen.querySelector('input')
+    
+                select.setAttribute('disabled', 'disabled')
+                input.setAttribute('disabled', 'disabled')
+            })
+
+            selectCmsVariant.setAttribute('disabled', 'disabled')
+            inputCmsVariant.setAttribute('disabled', 'disabled')
+        } else{
+            screens.forEach((screen, index) => {
+                const select = screen.querySelector('select')
+                const input = screen.querySelector('input')
+    
+                if(index === 0){
+                    select.removeAttribute('disabled')
+                    input.removeAttribute('disabled')
+    
+                    select.value = ''
+                    input.value = ''
+                } else{
+                    screen.remove()
+                }
+            })
+
+            allCheckbox.forEach((check) => {
+                check.checked = false
+            })
+
+            selectCmsVariant.removeAttribute('disabled')
+            selectCmsVariant.value = ''
+            inputCmsVariant.removeAttribute('disabled')
+            inputCmsVariant.style.display = 'none'
+            inputCmsVariant.value = ''
+
+            startBtn.style.display = 'block'
+            resetBtn.style.display = 'none'
+        }
+    },
+
+    start: (flagStart) => {
         if (flagStart) {
             appData.addScreens()
             appData.addServices()
             appData.addPrices()
             appData.showResult()
 
-            this.rangeStart = true
+            appData.rangeStart = true
+            appData.statusProgramm = true
+
+            appData.isBlockingProgramm()
         } else {
             alert('заполните поля для расчета!')
         }
     },
 
-    addTitle: function () {
+    reset: () => {
+        totalInput.value = 0 
+        totalCountOther.value = 0 
+        fullTotalCount.value = 0 
+        totalCountRollback.value = 0 
+        totalCountScreen.value = 0 
+
+        appData.screens = [],
+        appData.screenPrice = 0,
+        appData.rollback = 0,
+        appData.servicePricesPercent = 0,
+        appData.servicePricesNumber = 0,
+        appData.fullPrice = 0,
+        appData.servicePricePercent = 0,
+        appData.servicesPercent = {},
+        appData.servicesNumber = {},
+        appData.fullPriceRollback = 0,
+        appData.quantityScreen = 0,
+        appData.rangeStart = false
+        appData.cmsVariantPercent = 0,
+        appData.cmsVarintTotal = 0,
+        appData.statusProgramm = false
+
+        appData.isBlockingProgramm()
+    },
+
+    addTitle: () => {
         document.title = title.textContent
     },
 
-    addScreens: function () {
+    addScreens: () => {
         screens = document.querySelectorAll('.screen')
 
         screens.forEach((screen, index) => {
@@ -92,24 +194,25 @@ const appData = {
             const input = screen.querySelector('input')
             const selectName = select.options[select.selectedIndex].textContent
 
-            this.quantityScreen += +input.value
+            appData.quantityScreen += +input.value
 
-            this.screens.push({
+            appData.screens.push({
                 id: index,
                 name: selectName,
                 price: +select.value * +input.value
             })
         })
+        
     },
 
-    addServices: function () {
+    addServices: () => {
         percentItem.forEach((item) => {
             const checkbox = item.querySelector('input[type="checkbox"]')
             const label = item.querySelector('label')
             const input = item.querySelector('input[type="text"]')
 
             if (checkbox.checked) {
-                this.servicesPercent[label.textContent] = +input.value
+                appData.servicesPercent[label.textContent] = +input.value
             }
         })
 
@@ -119,52 +222,55 @@ const appData = {
             const input = item.querySelector('input[type="text"]')
 
             if (checkbox.checked) {
-                this.servicesNumber[label.textContent] = +input.value
+                appData.servicesNumber[label.textContent] = +input.value
             }
         })
+
+        if(selectCmsVariant.value === '50'){
+            appData.cmsVariantPercent = +selectCmsVariant.value
+        } else if(selectCmsVariant.value === 'other'){
+            appData.cmsVariantPercent = +inputCmsVariant.value
+        }
     },
 
-    addSsreenBlock: function () {
+    addSsreenBlock: () => {
         const cloneScreen = screens[0].cloneNode(true)
         screens = document.querySelectorAll('.screen')
-        /* 
-        я не помню, добавлял ли это Саша, но в общем. 
-        Если не сделать здесь переоределение, то получается так, что второй блок вставляется перед
-        первым блоком, но если вставить 3 блок, он появится над 2. Таким образом я исправил этот баг
-        можешь удалить переопределение, и сама увидишь результат.
-        Для чистоты эксперемента, советую заполнять поля, только так это заметно
-        */
+
         screens[screens.length - 1].after(cloneScreen)
+
     },
 
-    showResult: function () {
-        totalInput.value = this.screenPrice
-        totalCountOther.value = this.servicePricePercent + this.servicePricesNumber
-        fullTotalCount.value = this.fullPrice
-        totalCountRollback.value = this.fullPriceRollback
-        totalCountScreen.value = this.quantityScreen
+    showResult: () => {
+        totalInput.value = appData.screenPrice
+        totalCountOther.value = appData.servicePricePercent + appData.servicePricesNumber + appData.cmsVarintTotal
+        fullTotalCount.value = appData.fullPrice
+        totalCountRollback.value = appData.fullPriceRollback
+        totalCountScreen.value = appData.quantityScreen
     },
 
-    changeValueRollback: function () {
-        totalCountRollback.value = this.fullPriceRollback = this.fullPrice - ((this.fullPrice / 100) * this.rollback)
+    changeValueRollback: () => {
+        totalCountRollback.value = appData.fullPriceRollback = appData.fullPrice - ((appData.fullPrice / 100) * appData.rollback)
+        
     },
 
-    addPrices: function () {
-        this.screenPrice = this.screens.reduce((sum, num) => {
+    addPrices: () => {
+        appData.screenPrice = appData.screens.reduce((sum, num) => {
             return sum + +num.price
         }, 0)
 
-        for (let key in this.servicesNumber) {
-            this.servicePricesNumber += this.servicesNumber[key]
+        for (let key in appData.servicesNumber) {
+            appData.servicePricesNumber += appData.servicesNumber[key]
         }
 
-        for (let key in this.servicesPercent) {
-            this.servicePricePercent += this.screenPrice * (this.servicesPercent[key] / 100)
+        for (let key in appData.servicesPercent) {
+            appData.servicePricePercent += appData.screenPrice * (appData.servicesPercent[key] / 100)
         }
 
-        this.fullPrice = this.screenPrice + this.servicePricePercent + this.servicePricesNumber
-
-        this.fullPriceRollback = this.fullPrice - ((this.fullPrice / 100) * this.rollback)
+        appData.fullPrice = appData.screenPrice + appData.servicePricePercent + appData.servicePricesNumber
+        if(appData.cmsVariantPercent > 0) appData.cmsVarintTotal = (appData.fullPrice / 100) * appData.cmsVariantPercent
+        appData.fullPrice = appData.fullPrice + appData.cmsVarintTotal
+        appData.fullPriceRollback = appData.fullPrice - ((appData.fullPrice / 100) * appData.rollback)
     },
 };
 
